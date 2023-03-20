@@ -111,7 +111,7 @@ async Task ListApplicationsAsync()
         {
             foreach (var app in applications.Value)
             {
-                Console.WriteLine($"{app.DisplayName}");
+                Console.WriteLine($"{app.DisplayName} - {app.SignInAudience}");
             }
         }
     }
@@ -134,7 +134,15 @@ async Task ListServicePrincipalsAsync(bool withoutMsApps = false)
             {
                 if ( !withoutMsApps || spn.AppOwnerOrganizationId.ToString() != settings.MicrosoftAppTenantId)
                 {
-                    Console.WriteLine($"{spn.DisplayName} - {spn.AppId} - App Owner Tenant {spn.AppOwnerOrganizationId} - {spn.ServicePrincipalType}" );
+                    string permissions = String.Empty;
+                    if ( null != spn.Oauth2PermissionScopes)
+                    {
+                        foreach (var scope in spn.Oauth2PermissionScopes)
+                        {
+                            permissions += scope.Type + ":" + scope.UserConsentDisplayName + ":" + scope.AdminConsentDisplayName;
+                        }
+                    }
+                    Console.WriteLine($"{spn.DisplayName} - {spn.AppId} - Permissions {permissions} - App Owner Tenant {spn.AppOwnerOrganizationId} - {spn.ServicePrincipalType}" );
                 }
             }
         }
