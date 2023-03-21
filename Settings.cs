@@ -6,6 +6,7 @@ public class Settings
     public string? TenantId { get; set; }
     public string? MicrosoftAppTenantId { get; set; }
     public string[]? GraphUserScopes { get; set; }
+    public string? AppDisplayName { get; set;} = "Azure Static Web Apps";
 
     public static Settings LoadSettings()
     {

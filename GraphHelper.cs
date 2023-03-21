@@ -91,15 +91,19 @@ class GraphHelper
         });
         return servicePrincipals;
    }
-   public async static Task GetApplicatonPermissionsAsync(string appName)
+   public async static Task<ServicePrincipalCollectionResponse?> GetApplicatonPermissionsAsync(string appName)
    {
          // Ensure client isn't null
         _ = _userClient ??
             throw new System.NullReferenceException("Graph has not been initialized for user auth");
+        _ = _settings ??
+            throw new System.NullReferenceException("Settings not yet initialized.");
+
         var spn = await _userClient.ServicePrincipals.GetAsync((config) =>
         {
-            config.QueryParameters.Filter = "startsWith(displayName,'Azure')";
+            config.QueryParameters.Filter = $"startsWith(displayName,'{appName}')";
         }
         );
+        return spn;
    }
 }
