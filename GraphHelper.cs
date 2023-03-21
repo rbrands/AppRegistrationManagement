@@ -43,6 +43,8 @@ class GraphHelper
         // Ensure client isn't null
         _ = _userClient ??
             throw new System.NullReferenceException("Graph has not been initialized for user auth");
+        _ = _settings ??
+            throw new System.NullReferenceException("Settings not yet initialized.");
 
         return _userClient.Me
             .GetAsync((requestConfiguration) => 
@@ -71,16 +73,33 @@ class GraphHelper
             config.QueryParameters.Top = 900;
         });
         return servicePrincipals;
-   }
+    }
     public async static Task<ServicePrincipalCollectionResponse?> ListServicePrincipalsWithoutMicrosoftAppsAsync()
     {
          // Ensure client isn't null
         _ = _userClient ??
             throw new System.NullReferenceException("Graph has not been initialized for user auth");
+        _ = _settings ??
+            throw new System.NullReferenceException("Settings not yet initialized.");
+
         var servicePrincipals = await _userClient.ServicePrincipals.GetAsync((config) => 
         {
+            config.QueryParameters.Filter = $"appOwnerOrganizationId ne {_settings.MicrosoftAppTenantId}"; 
+            config.QueryParameters.Count = true;
+            config.Headers.Add("ConsistencyLevel", "eventual");
             config.QueryParameters.Top = 900;
         });
         return servicePrincipals;
+   }
+   public async static Task GetApplicatonPermissionsAsync(string appName)
+   {
+         // Ensure client isn't null
+        _ = _userClient ??
+            throw new System.NullReferenceException("Graph has not been initialized for user auth");
+        var spn = await _userClient.ServicePrincipals.GetAsync((config) =>
+        {
+            config.QueryParameters.Filter = "startsWith(displayName,'Azure')";
+        }
+        );
    }
 }

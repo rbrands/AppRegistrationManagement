@@ -132,24 +132,25 @@ async Task ListServicePrincipalsAsync(bool withoutMsApps = false)
         {
             foreach (var spn in servicePrincipals.Value)
             {
-                if ( !withoutMsApps || spn.AppOwnerOrganizationId.ToString() != settings.MicrosoftAppTenantId)
+                string permissions = String.Empty;
+                if ( null != spn.Oauth2PermissionScopes)
                 {
-                    string permissions = String.Empty;
-                    if ( null != spn.Oauth2PermissionScopes)
+                    foreach (var scope in spn.Oauth2PermissionScopes)
                     {
-                        foreach (var scope in spn.Oauth2PermissionScopes)
-                        {
-                            permissions += scope.Type + ":" + scope.UserConsentDisplayName + ":" + scope.AdminConsentDisplayName;
-                        }
+                        permissions += scope.Type + ":" + scope.Value;
                     }
-                    Console.WriteLine($"{spn.DisplayName} - {spn.AppId} - Permissions {permissions} - App Owner Tenant {spn.AppOwnerOrganizationId} - {spn.ServicePrincipalType}" );
                 }
+                Console.WriteLine($"{spn.DisplayName} - {spn.AppId} - Permissions {permissions} - App Owner Tenant {spn.AppOwnerOrganizationId} - {spn.ServicePrincipalType}" );
             }
         }
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Error getting applications: {ex.Message}");
+        Console.WriteLine($"Error getting ServicwePrincipals: {ex.Message}");
+        if (null != ex.InnerException)
+        {
+            Console.WriteLine(ex.InnerException.Message);
+        }
     }
 
 }
