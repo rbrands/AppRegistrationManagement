@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Microsoft.Graph.Models;
 
 // See https://aka.ms/new-console-template for more information
 // Created via tutorial https://learn.microsoft.com/en-us/graph/tutorials/dotnet?tabs=aad
@@ -25,6 +26,9 @@ while (choice != 0)
     Console.WriteLine("5. Get permissions requested by ServicePrincipal");
     Console.WriteLine("6. List ServicePrincipals of type EnterpriseApp");
     Console.WriteLine("7. List ManagedIdentities");
+    Console.WriteLine("8. List ServicePrincipals refering an internal application");
+    Console.WriteLine("9. List ServicePrincipals refering an external application");
+
 
     try
     {
@@ -71,6 +75,12 @@ while (choice != 0)
             break;
         case 7:
             await ListManagedIdentitiesAsync();
+            break;
+        case 8:
+            await ListServicePrincipalsWithInternalApplicationAsync();
+            break;
+        case 9:
+            await ListServicePrincipalsWithExternalApplicationAsync();
             break;
         default:
             Console.WriteLine("Invalid choice! Please try again.");
@@ -170,20 +180,7 @@ async Task ListServicePrincipalsAsync(bool withoutMsApps = false)
         {
             foreach (var spn in servicePrincipals.Value)
             {
-                string permissions = String.Empty;
-                if ( null != spn.Oauth2PermissionScopes)
-                {
-                    foreach (var scope in spn.Oauth2PermissionScopes)
-                    {
-                        permissions += scope.Type + ":" + scope.Value;
-                    }
-                }
-                string tags = String.Empty;
-                if (null != spn.Tags)
-                {
-                    tags = String.Join('-', spn.Tags);
-                }
-                Console.WriteLine($"{spn.DisplayName} - {spn.AppId} - Permissions {permissions} - App Owner Tenant {spn.AppOwnerOrganizationId} - {spn.ServicePrincipalType} - {tags}" );
+                Console.WriteLine(GetServicePrincipalAsString(spn));
             }
         }
     }
@@ -201,25 +198,12 @@ async Task ListServicePrincipalsEnterpriseAsync()
     try
     {
         var servicePrincipals = await GraphHelper.ListServicePrincipalsEnterpriseAsync();
-        Console.WriteLine($"# ServicePrincipals: {servicePrincipals?.Value?.Count()}");
+        Console.WriteLine($"# ServicePrincipals of type EntepriseApp: {servicePrincipals?.Value?.Count()}");
         if (null != servicePrincipals?.Value)
         {
             foreach (var spn in servicePrincipals.Value)
             {
-                string permissions = String.Empty;
-                if ( null != spn.Oauth2PermissionScopes)
-                {
-                    foreach (var scope in spn.Oauth2PermissionScopes)
-                    {
-                        permissions += scope.Type + ":" + scope.Value;
-                    }
-                }
-                string tags = String.Empty;
-                if (null != spn.Tags)
-                {
-                    tags = String.Join('-', spn.Tags);
-                }
-                Console.WriteLine($"{spn.DisplayName} - {spn.AppId} - Permissions {permissions} - App Owner Tenant {spn.AppOwnerOrganizationId} - {spn.ServicePrincipalType} - {tags}" );
+                Console.WriteLine(GetServicePrincipalAsString(spn));
             }
         }
     }
@@ -237,25 +221,59 @@ async Task ListManagedIdentitiesAsync()
     try
     {
         var servicePrincipals = await GraphHelper.ListManagedIdentitiesAsync();
-        Console.WriteLine($"# ServicePrincipals: {servicePrincipals?.Value?.Count()}");
+        Console.WriteLine($"# ManagedIdentities: {servicePrincipals?.Value?.Count()}");
         if (null != servicePrincipals?.Value)
         {
             foreach (var spn in servicePrincipals.Value)
             {
-                string permissions = String.Empty;
-                if ( null != spn.Oauth2PermissionScopes)
-                {
-                    foreach (var scope in spn.Oauth2PermissionScopes)
-                    {
-                        permissions += scope.Type + ":" + scope.Value;
-                    }
-                }
-                string tags = String.Empty;
-                if (null != spn.Tags)
-                {
-                    tags = String.Join('-', spn.Tags);
-                }
-                Console.WriteLine($"{spn.DisplayName} - {spn.AppId} - Permissions {permissions} - App Owner Tenant {spn.AppOwnerOrganizationId} - {spn.ServicePrincipalType} - {tags}" );
+                Console.WriteLine(GetServicePrincipalAsString(spn));
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error getting ServicwePrincipals: {ex.Message}");
+        if (null != ex.InnerException)
+        {
+            Console.WriteLine(ex.InnerException.Message);
+        }
+    }
+}
+async Task ListServicePrincipalsWithInternalApplicationAsync()
+{
+    try
+    {
+        var servicePrincipals = await GraphHelper.ListServicePrincipalsWithInternalApplicationAsync();
+        Console.WriteLine($"# ServicePrincipals with intenral application: {servicePrincipals?.Value?.Count()}");
+        if (null != servicePrincipals?.Value)
+        {
+            foreach (var spn in servicePrincipals.Value)
+            {
+                Console.WriteLine(GetServicePrincipalAsString(spn));
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error getting ServicwePrincipals: {ex.Message}");
+        if (null != ex.InnerException)
+        {
+            Console.WriteLine(ex.InnerException.Message);
+        }
+    }
+}
+
+async Task ListServicePrincipalsWithExternalApplicationAsync()
+{
+    try
+    {
+        var servicePrincipals = await GraphHelper.ListServicePrincipalsWithExternalApplicationAsync();
+        Console.WriteLine($"# ServicePrincipals with external application: {servicePrincipals?.Value?.Count()}");
+        if (null != servicePrincipals?.Value)
+        {
+            foreach (var spn in servicePrincipals.Value)
+            {
+                Console.WriteLine(GetServicePrincipalAsString(spn));
             }
         }
     }
@@ -279,15 +297,7 @@ async Task ListServicePrincipalPermissionsAsync(string appName)
         {
             foreach (var spn in servicePrincipals.Value)
             {
-                string permissions = String.Empty;
-                if ( null != spn.Oauth2PermissionScopes)
-                {
-                    foreach (var scope in spn.Oauth2PermissionScopes)
-                    {
-                        permissions += scope.Type + ":" + scope.Value;
-                    }
-                }
-                Console.WriteLine($"{spn.DisplayName} - {spn.AppId} - Permissions {permissions} - App Owner Tenant {spn.AppOwnerOrganizationId} - {spn.ServicePrincipalType}" );
+                Console.WriteLine(GetServicePrincipalAsString(spn));
             }
         }
     }
@@ -299,4 +309,24 @@ async Task ListServicePrincipalPermissionsAsync(string appName)
             Console.WriteLine(ex.InnerException.Message);
         }
     }
+}
+
+string GetServicePrincipalAsString(ServicePrincipal spn)
+{
+    StringBuilder sb = new StringBuilder();
+    string permissions = String.Empty;
+    if ( null != spn.Oauth2PermissionScopes)
+    {
+        foreach (var scope in spn.Oauth2PermissionScopes)
+        {
+            permissions += scope.Type + ":" + scope.Value;
+        }
+    }
+    string tags = String.Empty;
+    if (null != spn.Tags)
+    {
+        tags = String.Join('-', spn.Tags);
+    }
+    sb.Append($"{spn.DisplayName} | AppId:{spn.AppId} | Permissions:{permissions} | AppOwnerTenant:{spn.AppOwnerOrganizationId} | PrincipalType:{spn.ServicePrincipalType} | SignInAudience:{spn.SignInAudience} | Tags:{tags}" );
+    return sb.ToString();
 }

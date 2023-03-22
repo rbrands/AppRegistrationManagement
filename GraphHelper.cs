@@ -125,6 +125,40 @@ class GraphHelper
         });
         return servicePrincipals;
    }
+    public async static Task<ServicePrincipalCollectionResponse?> ListServicePrincipalsWithInternalApplicationAsync()
+    {
+         // Ensure client isn't null
+        _ = _userClient ??
+            throw new System.NullReferenceException("Graph has not been initialized for user auth");
+        _ = _settings ??
+            throw new System.NullReferenceException("Settings not yet initialized.");
+
+        var servicePrincipals = await _userClient.ServicePrincipals.GetAsync((config) => 
+        {
+            config.QueryParameters.Filter = $"appOwnerOrganizationId eq {_settings.TenantId}"; 
+            config.QueryParameters.Count = true;
+            config.Headers.Add("ConsistencyLevel", "eventual");
+            config.QueryParameters.Top = 900;
+        });
+        return servicePrincipals;
+   }
+    public async static Task<ServicePrincipalCollectionResponse?> ListServicePrincipalsWithExternalApplicationAsync()
+    {
+         // Ensure client isn't null
+        _ = _userClient ??
+            throw new System.NullReferenceException("Graph has not been initialized for user auth");
+        _ = _settings ??
+            throw new System.NullReferenceException("Settings not yet initialized.");
+
+        var servicePrincipals = await _userClient.ServicePrincipals.GetAsync((config) => 
+        {
+            config.QueryParameters.Filter = $"tags/any(t:t eq 'WindowsAzureActiveDirectoryIntegratedApp') and appOwnerOrganizationId ne {_settings.TenantId}"; 
+            config.QueryParameters.Count = true;
+            config.Headers.Add("ConsistencyLevel", "eventual");
+            config.QueryParameters.Top = 900;
+        });
+        return servicePrincipals;
+   }
    public async static Task<ServicePrincipalCollectionResponse?> GetApplicatonPermissionsAsync(string appName)
    {
          // Ensure client isn't null
