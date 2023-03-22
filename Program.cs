@@ -28,6 +28,7 @@ while (choice != 0)
     Console.WriteLine("7. List ManagedIdentities");
     Console.WriteLine("8. List ServicePrincipals refering an internal application");
     Console.WriteLine("9. List ServicePrincipals refering an external application");
+    Console.WriteLine("10. List applications without ServicePrincipal");
 
 
     try
@@ -81,6 +82,9 @@ while (choice != 0)
             break;
         case 9:
             await ListServicePrincipalsWithExternalApplicationAsync();
+            break;
+        case 10:
+            await ListApplicationsWithoutServicePrincipalAsync();
             break;
         default:
             Console.WriteLine("Invalid choice! Please try again.");
@@ -159,7 +163,28 @@ async Task ListApplicationsAsync()
                         sb.Append("-");
                     }
                 }
-                Console.WriteLine($"{app.DisplayName} - {app.SignInAudience} - {sb}");
+                Console.WriteLine($"{app.DisplayName} | SignInAudience:{app.SignInAudience} | AppId:{app.AppId} | RequiredResourceAccess:{sb}");
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error getting applications: {ex.Message}");
+    }
+
+}
+
+async Task ListApplicationsWithoutServicePrincipalAsync()
+{
+    try
+    {
+        var applications = await GraphHelper.ListApplicationsWithoutServicePrincipalAsync();
+        Console.WriteLine($"# Applications without ServicePrincipal: {applications?.Count()}");
+        if (null != applications)
+        {
+            foreach (var app in applications)
+            {
+                Console.WriteLine($"{app.DisplayName} | SignInAudience:{app.SignInAudience} | AppId:{app.AppId}");
             }
         }
     }

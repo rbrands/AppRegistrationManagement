@@ -53,8 +53,6 @@ class GraphHelper
                 requestConfiguration.QueryParameters.Select = new [] { "displayName", "mail", "userPrincipalName" };
             });
     }
-    // This function serves as a playground for testing Graph snippets
-    // or other code
     public async static Task<ApplicationCollectionResponse?> ListApplicationsAsync()
     {
          // Ensure client isn't null
@@ -62,7 +60,32 @@ class GraphHelper
             throw new System.NullReferenceException("Graph has not been initialized for user auth");
         var applications = await _userClient.Applications.GetAsync();
         return applications;
-   }
+    }
+    public async static Task<IList<Application>> ListApplicationsWithoutServicePrincipalAsync()
+    {
+         // Ensure client isn't null
+        _ = _userClient ??
+            throw new System.NullReferenceException("Graph has not been initialized for user auth");
+        var applications = await _userClient.Applications.GetAsync();
+        var servicePrincipals = await _userClient.ServicePrincipals.GetAsync((config) => 
+        {
+            config.QueryParameters.Top = 900;
+        });
+        List<Application> appList = new List<Application>();
+        if (null != applications?.Value && null != servicePrincipals?.Value)
+        {
+            foreach ( var app in applications.Value )
+            {
+                // Check if SPN with appId is found
+                var spn = servicePrincipals.Value.FirstOrDefault(spn => (spn.AppId == app.AppId));
+                if (null == spn)
+                {
+                    appList.Add(app);
+                }
+            }
+        }
+        return appList;
+    }
     public async static Task<ServicePrincipalCollectionResponse?> ListServicePrincipalsAsync()
     {
          // Ensure client isn't null
@@ -174,4 +197,6 @@ class GraphHelper
         );
         return spn;
    }
+
+   
 }
