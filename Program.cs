@@ -1,4 +1,6 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿using System.Text;
+
+// See https://aka.ms/new-console-template for more information
 // Created via tutorial https://learn.microsoft.com/en-us/graph/tutorials/dotnet?tabs=aad
 Console.WriteLine(".NET Graph AppRegistrations\n");
 
@@ -22,6 +24,7 @@ while (choice != 0)
     Console.WriteLine("4. List applications");
     Console.WriteLine("5. Get permissions requested by ServicePrincipal");
     Console.WriteLine("6. List ServicePrincipals of type EnterpriseApp");
+    Console.WriteLine("7. List ManagedIdentities");
 
     try
     {
@@ -65,6 +68,9 @@ while (choice != 0)
             break;
         case 6:
             await ListServicePrincipalsEnterpriseAsync();
+            break;
+        case 7:
+            await ListManagedIdentitiesAsync();
             break;
         default:
             Console.WriteLine("Invalid choice! Please try again.");
@@ -125,7 +131,25 @@ async Task ListApplicationsAsync()
         {
             foreach (var app in applications.Value)
             {
-                Console.WriteLine($"{app.DisplayName} - {app.SignInAudience}");
+                StringBuilder sb = new StringBuilder("RequiredResourceAccess:");
+                // List permission scopes an application MAY request
+                // https://learn.microsoft.com/en-us/graph/api/resources/requiredresourceaccess
+                if (null != app.RequiredResourceAccess)
+                {
+                    foreach (var rra in app.RequiredResourceAccess)
+                    {
+                        sb.Append(rra.ResourceAppId);
+                        if (null != rra.ResourceAccess)
+                        {
+                            foreach (var ra in rra.ResourceAccess)
+                            {
+                                sb.Append($"{ra.Id}-{ra.Type}/");
+                            }
+                        }
+                        sb.Append("-");
+                    }
+                }
+                Console.WriteLine($"{app.DisplayName} - {app.SignInAudience} - {sb}");
             }
         }
     }
@@ -177,6 +201,42 @@ async Task ListServicePrincipalsEnterpriseAsync()
     try
     {
         var servicePrincipals = await GraphHelper.ListServicePrincipalsEnterpriseAsync();
+        Console.WriteLine($"# ServicePrincipals: {servicePrincipals?.Value?.Count()}");
+        if (null != servicePrincipals?.Value)
+        {
+            foreach (var spn in servicePrincipals.Value)
+            {
+                string permissions = String.Empty;
+                if ( null != spn.Oauth2PermissionScopes)
+                {
+                    foreach (var scope in spn.Oauth2PermissionScopes)
+                    {
+                        permissions += scope.Type + ":" + scope.Value;
+                    }
+                }
+                string tags = String.Empty;
+                if (null != spn.Tags)
+                {
+                    tags = String.Join('-', spn.Tags);
+                }
+                Console.WriteLine($"{spn.DisplayName} - {spn.AppId} - Permissions {permissions} - App Owner Tenant {spn.AppOwnerOrganizationId} - {spn.ServicePrincipalType} - {tags}" );
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error getting ServicwePrincipals: {ex.Message}");
+        if (null != ex.InnerException)
+        {
+            Console.WriteLine(ex.InnerException.Message);
+        }
+    }
+}
+async Task ListManagedIdentitiesAsync()
+{
+    try
+    {
+        var servicePrincipals = await GraphHelper.ListManagedIdentitiesAsync();
         Console.WriteLine($"# ServicePrincipals: {servicePrincipals?.Value?.Count()}");
         if (null != servicePrincipals?.Value)
         {
