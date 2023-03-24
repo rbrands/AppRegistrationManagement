@@ -29,6 +29,7 @@ while (choice != 0)
     Console.WriteLine("8. List ServicePrincipals refering an internal application");
     Console.WriteLine("9. List ServicePrincipals refering an external application");
     Console.WriteLine("10. List applications without ServicePrincipal");
+    Console.WriteLine("11. List ServicePrincipals with verified publisher");
 
 
     try
@@ -85,6 +86,10 @@ while (choice != 0)
             break;
         case 10:
             await ListApplicationsWithoutServicePrincipalAsync();
+            break;
+        case 11:
+            // List ServicePrincipals
+            await ListServicePrincipalsWithPublisherAsync();
             break;
         default:
             Console.WriteLine("Invalid choice! Please try again.");
@@ -218,6 +223,33 @@ async Task ListServicePrincipalsAsync(bool withoutMsApps = false)
         }
     }
 }
+async Task ListServicePrincipalsWithPublisherAsync(bool withoutMsApps = false)
+{
+    try
+    {
+        var servicePrincipals = withoutMsApps? await GraphHelper.ListServicePrincipalsWithoutMicrosoftAppsAsync() : await GraphHelper.ListServicePrincipalsAsync();
+        Console.WriteLine($"# ServicePrincipals: {servicePrincipals?.Value?.Count()}");
+        if (null != servicePrincipals?.Value)
+        {
+            foreach (var spn in servicePrincipals.Value)
+            {
+                if (!String.IsNullOrEmpty(spn.VerifiedPublisher?.DisplayName))
+                {
+                    Console.WriteLine(GetServicePrincipalAsString(spn));
+                }
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error getting ServicwePrincipals: {ex.Message}");
+        if (null != ex.InnerException)
+        {
+            Console.WriteLine(ex.InnerException.Message);
+        }
+    }
+}
+
 async Task ListServicePrincipalsEnterpriseAsync()
 {
     try
