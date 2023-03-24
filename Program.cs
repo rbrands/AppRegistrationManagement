@@ -347,11 +347,35 @@ string GetServicePrincipalAsString(ServicePrincipal spn)
             permissions += scope.Type + ":" + scope.Value;
         }
     }
+    string vendorType = String.Empty;
     string tags = String.Empty;
+    if (null != spn.ServicePrincipalType)
+    {
+        if (spn.ServicePrincipalType == "ManagedIdentity")
+        {
+            vendorType += "ManagedIdentity";
+        }
+    }
     if (null != spn.Tags)
     {
         tags = String.Join('-', spn.Tags);
+        if (spn.Tags.Contains("WindowsAzureActiveDirectoryIntegratedApp"))
+        {
+            vendorType += "EnterpriseApp-";
+        }
     }
-    sb.Append($"{spn.DisplayName} | AppId:{spn.AppId} | Permissions:{permissions} | AppOwnerTenant:{spn.AppOwnerOrganizationId} | PrincipalType:{spn.ServicePrincipalType} | SignInAudience:{spn.SignInAudience} | Tags:{tags}" );
+    if (null != spn.AppOwnerOrganizationId)
+    {
+        if (spn.AppOwnerOrganizationId == System.Guid.Parse(settings.TenantId ?? String.Empty))
+        {
+            vendorType +=  "Internal";
+        }
+        else
+        {
+            vendorType += "External";
+        }
+    }
+
+    sb.Append($"{spn.DisplayName} | AppId:{spn.AppId} | Permissions:{permissions} | AppOwnerTenant:{spn.AppOwnerOrganizationId} | Vendor: {vendorType} |  VerifiedPublisher:{spn.VerifiedPublisher?.DisplayName} | PrincipalType:{spn.ServicePrincipalType} | SignInAudience:{spn.SignInAudience} | Tags:{tags}" );
     return sb.ToString();
 }
