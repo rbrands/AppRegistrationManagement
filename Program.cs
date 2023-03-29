@@ -1,5 +1,7 @@
 ﻿using System.Text;
 using Microsoft.Graph.Models;
+using Microsoft.Graph;
+using Microsoft.Graph.Models.ODataErrors;
 
 // See https://aka.ms/new-console-template for more information
 // Created via tutorial https://learn.microsoft.com/en-us/graph/tutorials/dotnet?tabs=aad
@@ -30,6 +32,7 @@ while (choice != 0)
     Console.WriteLine("9. List ServicePrincipals refering an external application");
     Console.WriteLine("10. List applications without ServicePrincipal");
     Console.WriteLine("11. List ServicePrincipals with verified publisher");
+    Console.WriteLine("12. List Sign-Ins for application");
 
 
     try
@@ -90,6 +93,15 @@ while (choice != 0)
         case 11:
             // List ServicePrincipals
             await ListServicePrincipalsWithPublisherAsync();
+            break;
+        case 12:
+            Console.WriteLine("Please enter an AppName to look for (emtpy for default):");
+            string? displayName = Console.ReadLine();
+            if (String.IsNullOrWhiteSpace(displayName))
+            {
+                displayName = settings.AppDisplayName ?? "Azure";
+            }
+            await ListSignInsAsync(displayName);
             break;
         default:
             Console.WriteLine("Invalid choice! Please try again.");
@@ -360,7 +372,7 @@ async Task ListServicePrincipalPermissionsAsync(string appName)
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Error getting ServicwePrincipals: {ex.Message}");
+        Console.WriteLine($"Error getting ServicePrincipals: {ex.Message}");
         if (null != ex.InnerException)
         {
             Console.WriteLine(ex.InnerException.Message);
@@ -411,3 +423,34 @@ string GetServicePrincipalAsString(ServicePrincipal spn)
     sb.Append($"{spn.DisplayName} | AppId:{spn.AppId} | Permissions:{permissions} | AppOwnerTenant:{spn.AppOwnerOrganizationId} | Vendor: {vendorType} |  VerifiedPublisher:{spn.VerifiedPublisher?.DisplayName} | PrincipalType:{spn.ServicePrincipalType} | SignInAudience:{spn.SignInAudience} | Tags:{tags}" );
     return sb.ToString();
 }
+
+async Task ListSignInsAsync(string appName)
+{
+    try
+    {
+        var signInCollectionResponse = await GraphHelper.GetApplicatonSignInsAsync(appName);
+        Console.WriteLine($"# SignIns: {signInCollectionResponse?.Value?.Count()}");
+        if (null != signInCollectionResponse?.Value)
+        {
+            foreach (var signIn in signInCollectionResponse.Value)
+            {
+                Console.WriteLine($"{signIn.CreatedDateTime} | {signIn.UserDisplayName} | {signIn.UserPrincipalName} | {signIn.AppDisplayName} | {signIn.AppId} | {signIn.ClientAppUsed} ");
+            }
+        }
+    }
+    catch (ODataError odataError)
+    {
+        Console.WriteLine($"ODataError getting SignIns: {odataError.ToString()}");
+        Console.WriteLine(odataError.Error?.Code);
+        Console.WriteLine(odataError.Error?.Message);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error getting SignIns: {ex.Message}");
+        if (null != ex.InnerException)
+        {
+            Console.WriteLine(ex.InnerException.Message);
+        }
+    }
+}
+

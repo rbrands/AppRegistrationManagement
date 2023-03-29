@@ -197,6 +197,23 @@ class GraphHelper
         );
         return spn;
    }
+   public async static Task<SignInCollectionResponse?> GetApplicatonSignInsAsync(string appName)
+   {
+         // Ensure client isn't null
+        _ = _userClient ??
+            throw new System.NullReferenceException("Graph has not been initialized for user auth");
+        _ = _settings ??
+            throw new System.NullReferenceException("Settings not yet initialized.");
+
+        var signInCollectionResponse = await _userClient.AuditLogs.SignIns.GetAsync((config) =>
+        {
+            config.QueryParameters.Filter = $"startsWith(appDisplayName,'{appName}')";
+            config.QueryParameters.Top = 2;
+        }
+        );
+
+        return signInCollectionResponse;
+   }
 
    
 }
