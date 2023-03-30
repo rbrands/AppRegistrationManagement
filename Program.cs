@@ -370,6 +370,12 @@ async Task ListServicePrincipalPermissionsAsync(string appName)
             }
         }
     }
+    catch (ODataError odataError)
+    {
+        Console.WriteLine($"ODataError getting SignIns: {odataError.ToString()}");
+        Console.WriteLine(odataError.Error?.Code);
+        Console.WriteLine(odataError.Error?.Message);
+    }
     catch (Exception ex)
     {
         Console.WriteLine($"Error getting ServicePrincipals: {ex.Message}");

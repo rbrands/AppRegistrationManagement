@@ -195,6 +195,29 @@ class GraphHelper
             config.QueryParameters.Filter = $"startsWith(displayName,'{appName}')";
         }
         );
+        if (null != spn?.Value)
+        {
+            foreach (var sp in spn.Value)
+            {
+                var permissions = await _userClient.ServicePrincipals[sp.Id].Oauth2PermissionGrants.GetAsync((config) =>
+                {
+                    config.QueryParameters.Top = 900;
+                }
+                );
+                if (null != permissions?.Value)
+                {
+                    foreach (var permission in permissions.Value)
+                    {
+                        // var app = await _userClient.Applications[permission.ClientId].GetAsync();
+                        //if (null != app)
+                        //{
+                        //    Console.WriteLine($"App: {app.DisplayName} has permission {permission.Scope}");
+                        //}
+                        Console.WriteLine($"App: {sp.DisplayName} has permission {permission.Scope}");
+                    }
+                }
+            }
+        }
         return spn;
    }
    public async static Task<SignInCollectionResponse?> GetApplicatonSignInsAsync(string appName)
