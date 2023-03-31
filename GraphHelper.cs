@@ -213,12 +213,37 @@ class GraphHelper
                         //{
                         //    Console.WriteLine($"App: {app.DisplayName} has permission {permission.Scope}");
                         //}
-                        Console.WriteLine($"App: {sp.DisplayName} has permission {permission.Scope}");
+                        var api = await _userClient.ServicePrincipals[permission.ResourceId].GetAsync();
+                        Console.WriteLine($"App: {sp.DisplayName} has permission {permission.Scope} | {permission.ConsentType} | {api?.AppDisplayName}");
                     }
                 }
             }
         }
         return spn;
+   }
+   public async static Task<string> GetApplicatonPermissionsAsStringAsync(ServicePrincipal spn)
+   {
+         // Ensure client isn't null
+        _ = _userClient ??
+            throw new System.NullReferenceException("Graph has not been initialized for user auth");
+        _ = _settings ??
+            throw new System.NullReferenceException("Settings not yet initialized.");
+
+            var permissions = await _userClient.ServicePrincipals[spn.Id].Oauth2PermissionGrants.GetAsync((config) =>
+            {
+                config.QueryParameters.Top = 900;
+            }
+            );
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            if (null != permissions?.Value)
+            {
+                foreach (var permission in permissions.Value)
+                {
+                    var api = await _userClient.ServicePrincipals[permission.ResourceId].GetAsync();
+                    sb.Append($"{api?.AppDisplayName}:{permission.Scope}-{permission.ConsentType}");
+                }
+            }
+        return sb.ToString();
    }
    public async static Task<SignInCollectionResponse?> GetApplicatonSignInsAsync(string appName)
    {

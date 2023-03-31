@@ -222,7 +222,7 @@ async Task ListServicePrincipalsAsync(bool withoutMsApps = false)
         {
             foreach (var spn in servicePrincipals.Value)
             {
-                Console.WriteLine(GetServicePrincipalAsString(spn));
+                Console.WriteLine(await GetServicePrincipalAsString(spn));
             }
         }
     }
@@ -247,7 +247,7 @@ async Task ListServicePrincipalsWithPublisherAsync(bool withoutMsApps = false)
             {
                 if (!String.IsNullOrEmpty(spn.VerifiedPublisher?.DisplayName))
                 {
-                    Console.WriteLine(GetServicePrincipalAsString(spn));
+                    Console.WriteLine(await GetServicePrincipalAsString(spn));
                 }
             }
         }
@@ -272,7 +272,7 @@ async Task ListServicePrincipalsEnterpriseAsync()
         {
             foreach (var spn in servicePrincipals.Value)
             {
-                Console.WriteLine(GetServicePrincipalAsString(spn));
+                Console.WriteLine(await GetServicePrincipalAsString(spn));
             }
         }
     }
@@ -295,7 +295,7 @@ async Task ListManagedIdentitiesAsync()
         {
             foreach (var spn in servicePrincipals.Value)
             {
-                Console.WriteLine(GetServicePrincipalAsString(spn));
+                Console.WriteLine(await GetServicePrincipalAsString(spn));
             }
         }
     }
@@ -318,7 +318,7 @@ async Task ListServicePrincipalsWithInternalApplicationAsync()
         {
             foreach (var spn in servicePrincipals.Value)
             {
-                Console.WriteLine(GetServicePrincipalAsString(spn));
+                Console.WriteLine(await GetServicePrincipalAsString(spn));
             }
         }
     }
@@ -342,7 +342,7 @@ async Task ListServicePrincipalsWithExternalApplicationAsync()
         {
             foreach (var spn in servicePrincipals.Value)
             {
-                Console.WriteLine(GetServicePrincipalAsString(spn));
+                Console.WriteLine(await GetServicePrincipalAsString(spn));
             }
         }
     }
@@ -366,7 +366,7 @@ async Task ListServicePrincipalPermissionsAsync(string appName)
         {
             foreach (var spn in servicePrincipals.Value)
             {
-                Console.WriteLine(GetServicePrincipalAsString(spn));
+                Console.WriteLine(await GetServicePrincipalAsString(spn));
             }
         }
     }
@@ -386,17 +386,10 @@ async Task ListServicePrincipalPermissionsAsync(string appName)
     }
 }
 
-string GetServicePrincipalAsString(ServicePrincipal spn)
+async Task<string> GetServicePrincipalAsString(ServicePrincipal spn)
 {
     StringBuilder sb = new StringBuilder();
-    string permissions = String.Empty;
-    if ( null != spn.Oauth2PermissionScopes)
-    {
-        foreach (var scope in spn.Oauth2PermissionScopes)
-        {
-            permissions += scope.Type + ":" + scope.Value;
-        }
-    }
+    string permissions = await GraphHelper.GetApplicatonPermissionsAsStringAsync(spn);
     string vendorType = String.Empty;
     string tags = String.Empty;
     if (null != spn.ServicePrincipalType)
