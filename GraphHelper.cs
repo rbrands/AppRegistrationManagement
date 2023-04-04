@@ -245,6 +245,30 @@ class GraphHelper
             }
         return sb.ToString();
    }
+   public async static Task<string> GetAssignedUsersAsync(ServicePrincipal spn)
+   {
+         // Ensure client isn't null
+        _ = _userClient ??
+            throw new System.NullReferenceException("Graph has not been initialized for user auth");
+        _ = _settings ??
+            throw new System.NullReferenceException("Settings not yet initialized.");
+            var appRoles = await _userClient.ServicePrincipals[spn.Id].AppRoleAssignments.GetAsync((config) =>
+            {
+                config.QueryParameters.Top = 900;
+            }
+            );
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            if (null != appRoles?.Value)
+            {
+                foreach (var appRole in appRoles.Value)
+                {
+                    
+                    sb.Append($"{appRole.PrincipalDisplayName}-");
+                }
+            }
+            return sb.ToString();
+   }
+
    public async static Task<SignInCollectionResponse?> GetApplicatonSignInsAsync(string appName)
    {
          // Ensure client isn't null

@@ -390,6 +390,7 @@ async Task<string> GetServicePrincipalAsString(ServicePrincipal spn)
 {
     StringBuilder sb = new StringBuilder();
     string permissions = await GraphHelper.GetApplicatonPermissionsAsStringAsync(spn);
+    string appRoles = await GraphHelper.GetAssignedUsersAsync(spn);
     string vendorType = String.Empty;
     string tags = String.Empty;
     if (null != spn.ServicePrincipalType)
@@ -419,7 +420,7 @@ async Task<string> GetServicePrincipalAsString(ServicePrincipal spn)
         }
     }
 
-    sb.Append($"{spn.DisplayName} | AppId:{spn.AppId} | Permissions:{permissions} | AppOwnerTenant:{spn.AppOwnerOrganizationId} | Vendor: {vendorType} |  VerifiedPublisher:{spn.VerifiedPublisher?.DisplayName} | PrincipalType:{spn.ServicePrincipalType} | SignInAudience:{spn.SignInAudience} | Tags:{tags}" );
+    sb.Append($"{spn.DisplayName} | AppId:{spn.AppId} | Permissions:{permissions} | AppRoles:{appRoles} | AppOwnerTenant:{spn.AppOwnerOrganizationId} | Vendor: {vendorType} |  VerifiedPublisher:{spn.VerifiedPublisher?.DisplayName} | PrincipalType:{spn.ServicePrincipalType} | SignInAudience:{spn.SignInAudience} | Tags:{tags}" );
     return sb.ToString();
 }
 
