@@ -184,6 +184,12 @@ async Task ListApplicationsAsync()
             }
         }
     }
+    catch (ODataError odataError)
+    {
+        Console.WriteLine($"ODataError getting SignIns: {odataError.ToString()}");
+        Console.WriteLine(odataError.Error?.Code);
+        Console.WriteLine(odataError.Error?.Message);
+    }
     catch (Exception ex)
     {
         Console.WriteLine($"Error getting applications: {ex.Message}");
@@ -205,6 +211,12 @@ async Task ListApplicationsWithoutServicePrincipalAsync()
             }
         }
     }
+    catch (ODataError odataError)
+    {
+        Console.WriteLine($"ODataError getting SignIns: {odataError.ToString()}");
+        Console.WriteLine(odataError.Error?.Code);
+        Console.WriteLine(odataError.Error?.Message);
+    }
     catch (Exception ex)
     {
         Console.WriteLine($"Error getting applications: {ex.Message}");
@@ -225,6 +237,12 @@ async Task ListServicePrincipalsAsync(bool withoutMsApps = false)
                 Console.WriteLine(await GetServicePrincipalAsString(spn));
             }
         }
+    }
+    catch (ODataError odataError)
+    {
+        Console.WriteLine($"ODataError getting SignIns: {odataError.ToString()}");
+        Console.WriteLine(odataError.Error?.Code);
+        Console.WriteLine(odataError.Error?.Message);
     }
     catch (Exception ex)
     {
@@ -252,6 +270,12 @@ async Task ListServicePrincipalsWithPublisherAsync(bool withoutMsApps = false)
             }
         }
     }
+    catch (ODataError odataError)
+    {
+        Console.WriteLine($"ODataError getting SignIns: {odataError.ToString()}");
+        Console.WriteLine(odataError.Error?.Code);
+        Console.WriteLine(odataError.Error?.Message);
+    }
     catch (Exception ex)
     {
         Console.WriteLine($"Error getting ServicwePrincipals: {ex.Message}");
@@ -276,6 +300,12 @@ async Task ListServicePrincipalsEnterpriseAsync()
             }
         }
     }
+    catch (ODataError odataError)
+    {
+        Console.WriteLine($"ODataError: {odataError.ToString()}");
+        Console.WriteLine(odataError.Error?.Code);
+        Console.WriteLine(odataError.Error?.Message);
+    }
     catch (Exception ex)
     {
         Console.WriteLine($"Error getting ServicwePrincipals: {ex.Message}");
@@ -298,6 +328,12 @@ async Task ListManagedIdentitiesAsync()
                 Console.WriteLine(await GetServicePrincipalAsString(spn));
             }
         }
+    }
+    catch (ODataError odataError)
+    {
+        Console.WriteLine($"ODataError getting SignIns: {odataError.ToString()}");
+        Console.WriteLine(odataError.Error?.Code);
+        Console.WriteLine(odataError.Error?.Message);
     }
     catch (Exception ex)
     {
@@ -322,6 +358,12 @@ async Task ListServicePrincipalsWithInternalApplicationAsync()
             }
         }
     }
+    catch (ODataError odataError)
+    {
+        Console.WriteLine($"ODataError getting SignIns: {odataError.ToString()}");
+        Console.WriteLine(odataError.Error?.Code);
+        Console.WriteLine(odataError.Error?.Message);
+    }
     catch (Exception ex)
     {
         Console.WriteLine($"Error getting ServicwePrincipals: {ex.Message}");
@@ -345,6 +387,12 @@ async Task ListServicePrincipalsWithExternalApplicationAsync()
                 Console.WriteLine(await GetServicePrincipalAsString(spn));
             }
         }
+    }
+    catch (ODataError odataError)
+    {
+        Console.WriteLine($"ODataError getting SignIns: {odataError.ToString()}");
+        Console.WriteLine(odataError.Error?.Code);
+        Console.WriteLine(odataError.Error?.Message);
     }
     catch (Exception ex)
     {

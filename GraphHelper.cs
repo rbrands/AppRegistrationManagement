@@ -12,6 +12,7 @@ class GraphHelper
     private static DeviceCodeCredential? _deviceCodeCredential;
     // Client configured with user authentication
     private static GraphServiceClient? _userClient;
+    private static Dictionary<string, ServicePrincipal> _apis = new Dictionary<string, ServicePrincipal>();
 
     public static void InitializeGraphForUserAuth(Settings settings,
         Func<DeviceCodeInfo, CancellationToken, Task> deviceCodePrompt)
@@ -213,7 +214,18 @@ class GraphHelper
                         //{
                         //    Console.WriteLine($"App: {app.DisplayName} has permission {permission.Scope}");
                         //}
-                        var api = await _userClient.ServicePrincipals[permission.ResourceId].GetAsync();
+                        ServicePrincipal? api = null;
+                        if (!String.IsNullOrEmpty(permission.ResourceId))
+                        {
+                            if (!_apis.TryGetValue(permission.ResourceId, out api))
+                            {
+                                api = await _userClient.ServicePrincipals[permission.ResourceId].GetAsync();
+                                if (null != api)
+                                {
+                                    _apis[permission.ResourceId] = api;
+                                }
+                            }
+                        }
                         Console.WriteLine($"App: {sp.DisplayName} has permission {permission.Scope} | {permission.ConsentType} | {api?.AppDisplayName}");
                     }
                 }
@@ -239,8 +251,19 @@ class GraphHelper
             {
                 foreach (var permission in permissions.Value)
                 {
-                    var api = await _userClient.ServicePrincipals[permission.ResourceId].GetAsync();
-                    sb.Append($"{api?.AppDisplayName}:{permission.Scope}-{permission.ConsentType}");
+                    ServicePrincipal? api = null;
+                    if (!String.IsNullOrEmpty(permission.ResourceId))
+                    {
+                        if (!_apis.TryGetValue(permission.ResourceId, out api))
+                        {
+                            api = await _userClient.ServicePrincipals[permission.ResourceId].GetAsync();
+                            if (null != api)
+                            {
+                                _apis[permission.ResourceId] = api;
+                            }
+                        }
+                    }
+                    sb.Append($"{api?.AppDisplayName}:{permission.Scope}-{permission.ConsentType}/");
                 }
             }
         return sb.ToString();
