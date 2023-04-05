@@ -233,6 +233,8 @@ class GraphHelper
         }
         return spn;
    }
+   /// Gets the persmissons for the given SPN
+   /// See https://github.com/michevnew/PowerShell/blob/master/app_Permissions_inventory_GraphAPI.ps1 for inspiration
    public async static Task<string> GetApplicatonPermissionsAsStringAsync(ServicePrincipal spn)
    {
          // Ensure client isn't null
