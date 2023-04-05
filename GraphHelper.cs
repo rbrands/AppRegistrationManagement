@@ -241,33 +241,54 @@ class GraphHelper
         _ = _userClient ??
             throw new System.NullReferenceException("Graph has not been initialized for user auth");
         _ = _settings ??
-            throw new System.NullReferenceException("Settings not yet initialized.");
+        throw new System.NullReferenceException("Settings not yet initialized.");
+        Dictionary<string, int> userPermissionsPerApiAndScope = new Dictionary<string, int>();
 
-            var permissions = await _userClient.ServicePrincipals[spn.Id].Oauth2PermissionGrants.GetAsync((config) =>
+        var permissions = await _userClient.ServicePrincipals[spn.Id].Oauth2PermissionGrants.GetAsync((config) =>
+        {
+            config.QueryParameters.Top = 900;
+        }
+        );
+        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+        if (null != permissions?.Value)
+        {
+            foreach (var permission in permissions.Value)
             {
-                config.QueryParameters.Top = 900;
-            }
-            );
-            System.Text.StringBuilder sb = new System.Text.StringBuilder();
-            if (null != permissions?.Value)
-            {
-                foreach (var permission in permissions.Value)
+                ServicePrincipal? api = null;
+                if (!String.IsNullOrEmpty(permission.ResourceId))
                 {
-                    ServicePrincipal? api = null;
-                    if (!String.IsNullOrEmpty(permission.ResourceId))
+                    if (!_apis.TryGetValue(permission.ResourceId, out api))
                     {
-                        if (!_apis.TryGetValue(permission.ResourceId, out api))
+                        api = await _userClient.ServicePrincipals[permission.ResourceId].GetAsync();
+                        if (null != api)
                         {
-                            api = await _userClient.ServicePrincipals[permission.ResourceId].GetAsync();
-                            if (null != api)
-                            {
-                                _apis[permission.ResourceId] = api;
-                            }
+                            _apis[permission.ResourceId] = api;
                         }
                     }
-                    sb.Append($"{api?.AppDisplayName}:{permission.Scope}-{permission.ConsentType}/");
+                }
+                string userId = String.Empty;
+                if (!String.IsNullOrEmpty(permission.PrincipalId))
+                {
+                    string apiAndScope = api?.AppDisplayName + ":" + (permission.Scope ?? "noscope");
+                    int userCounter = 0;
+                    userPermissionsPerApiAndScope.TryGetValue(apiAndScope, out userCounter);
+                    ++userCounter;
+                    userPermissionsPerApiAndScope[apiAndScope] = userCounter;
+
+                }
+                if (permission.ConsentType == "AllPrincipals")
+                {
+                    sb.Append($"{api?.AppDisplayName}:{permission.Scope} (Admin Consent)/");
                 }
             }
+            if (userPermissionsPerApiAndScope.Count > 0)
+            {
+                foreach (var kvp in userPermissionsPerApiAndScope)
+                {
+                    sb.Append($"{kvp.Key} (User Consent): {kvp.Value}/");
+                }
+            }
+        }
         return sb.ToString();
    }
    public async static Task<string> GetAssignedUsersAsync(ServicePrincipal spn)
