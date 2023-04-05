@@ -275,7 +275,7 @@ class GraphHelper
             throw new System.NullReferenceException("Graph has not been initialized for user auth");
         _ = _settings ??
             throw new System.NullReferenceException("Settings not yet initialized.");
-            var appRoles = await _userClient.ServicePrincipals[spn.Id].AppRoleAssignments.GetAsync((config) =>
+            var appRoles = await _userClient.ServicePrincipals[spn.Id].AppRoleAssignedTo.GetAsync((config) =>
             {
                 config.QueryParameters.Top = 900;
             }
